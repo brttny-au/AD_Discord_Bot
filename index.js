@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
-require("dotenv").config();
+require("dotenv").config(); // Load environment variables only once
 
 // Create a new client instance
 const client = new Client({
@@ -16,8 +16,11 @@ const client = new Client({
     ],
 });
 
-// Load config
-const config = require("./config.json");
+const config = {
+    token: process.env.DISCORD_TOKEN,
+    clientId: process.env.CLIENT_ID,
+    openaiKey: process.env.OPENAI_API_KEY,
+};
 
 // Command collection
 client.commands = new Collection();
@@ -39,13 +42,13 @@ for (const file of commandFiles) {
 }
 
 // Register slash commands
-const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+const rest = new REST({ version: "10" }).setToken(config.token);
 
 (async () => {
     try {
         console.log("Started refreshing application (/) commands.");
 
-        await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
+        await rest.put(Routes.applicationCommands(config.clientId), {
             body: commands,
         });
 
@@ -80,4 +83,4 @@ client.once("ready", () => {
 });
 
 // Login to Discord with your token
-client.login(process.env.DISCORD_TOKEN);
+client.login(config.token);
